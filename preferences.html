@@ -2,313 +2,115 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Select Preferences | CineSense</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preferences |  CineSense</title>
   <link rel="stylesheet" href="style.css">
-  <script src="movies-data.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+
+  </style>
 </head>
+<body class="cluster-prompt-body">
 
-<body>
-  <nav class="cs-nav">
-    <div style="display: flex; align-items: center; gap: 1rem;">
-      <a href="index.html" class="cs-brand">CineSense</a>
-    </div>
+  <div class="cluster-modal-container">
+    <div class="custom-cluster-card">
+      <h2 class="cluster-title">Build a Custom Preference Cluster</h2>
+      <p class="cluster-subtitle">Combine the 4 criteria to create a custom target cluster:</p>
 
-    <div style="display: flex; align-items: center; gap: 15px;">
-      <span class="cs-user-pill" id="user-display"></span>
-      <button class="btn-signout" onclick="handleSignOut()">Sign Out</button>
-    </div>
-  </nav>
-
-  <div style="max-width: 1080px; margin: 2.5rem auto; padding: 0 1.5rem;">
-    <h2 style="font-size: 2.2rem; font-weight: 700; margin-bottom: 0.4rem;">Welcome to CineSense!</h2>
-    <p style="color: var(--cs-text-muted); margin-bottom: 1.25rem;">
-      Pick your favorite cinematic themes below to calibrate your recommendations. You can select up to <strong>3 preferences</strong>.
-    </p>
-
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-      <div style="font-size: 1.15rem; color: #f472b6; font-weight: 700;">
-        Selected: <span id="selected-count">0</span> / 3
-      </div>
-      <button class="btn-outline" style="font-size: 0.8rem; padding: 5px 12px;" onclick="openCustomModal()">
-        + Add Custom Cluster
-      </button>
-    </div>
-
-    <div class="clusters-grid" id="clusters-container"></div>
-
-    <div class="card-actions-bar">
-      <button class="btn-reset-filters" onclick="clearSelections()">Clear Selections</button>
-      <button class="btn-primary" id="continue-btn" style="display: none;" onclick="goToDashboard()">
-        Save Preferences &rarr;
-      </button>
-    </div>
-  </div>
-
-  <div class="modal-backdrop" id="custom-cluster-modal" onclick="closeCustomModal()">
-    <div class="custom-cluster-dialog" onclick="event.stopPropagation()">
-      <h3 style="font-size: 1.25rem; font-weight: 700; color: #f3e8ff;">Build a Custom Preference Cluster</h3>
-      <p style="font-size: 0.8rem; color: var(--cs-text-muted); margin-top: 4px;">
-        Combine the 4 criteria to create a custom target cluster:
-      </p>
-
-      <form onsubmit="handleCreateCluster(event)">
-        <div class="custom-form-grid">
-          <div class="cs-field">
-            <label>Genre</label>
-            <select id="custom-genre">
-              <option value="Action">Action</option>
-              <option value="Sci-Fi">Sci-Fi</option>
-              <option value="Crime">Crime</option>
-              <option value="Drama" selected>Drama</option>
-              <option value="Adventure">Adventure</option>
-              <option value="Comedy">Comedy</option>
-              <option value="Horror">Horror</option>
-              <option value="Documentary">Documentary</option>
-            </select>
+      <form id="clusterForm">
+        <div class="cluster-grid">
+          <div class="cluster-field">
+            <label for="clusterGenre">Genre</label>
+            <div class="select-wrapper">
+              <select id="clusterGenre" name="genre">
+                <option value="Drama" selected>Drama</option>
+                <option value="Action">Action</option>
+                <option value="Adventure">Adventure</option>
+                <option value="Animation">Animation</option>
+                <option value="Comedy">Comedy</option>
+                <option value="Crime">Crime</option>
+                <option value="Documentary">Documentary</option>
+                <option value="Family">Family</option>
+                <option value="Fantasy">Fantasy</option>
+                <option value="Mystery">Mystery</option>
+                <option value="Romance">Romance</option>
+                <option value="Sci-Fi">Sci-Fi</option>
+                <option value="Thriller">Thriller</option>
+              </select>
+            </div>
           </div>
 
-          <div class="cs-field">
-            <label>Style / Form</label>
-            <select id="custom-style">
-              <option value="Live-Action" selected>Live-Action</option>
+          <div class="cluster-field">
+            <label for="clusterStyle">Style / Form</label>
+            <div class="select-wrapper">
+              <select id="clusterStyle" name="style">
+              <option value="Live-Action">Live-Action</option>
               <option value="Animation">Animation</option>
               <option value="Noir / Dark">Noir / Dark</option>
               <option value="Experimental">Experimental</option>
-              <option value="Documentary">Documentary</option>
-            </select>
+              </select>
+            </div>
           </div>
 
-          <div class="cs-field">
-            <label>Age Restriction</label>
-            <select id="custom-age">
-              <option value="G">G</option>
-              <option value="PG">PG</option>
-              <option value="PG-13" selected>PG-13</option>
-              <option value="R">R</option>
-            </select>
+          <div class="cluster-field">
+            <label for="clusterRating">Age Restriction</label>
+            <div class="select-wrapper">
+              <select id="clusterRating" name="rating">
+                <option value="G">G</option>
+                <option value="PG">PG</option>
+                <option value="PG-13" selected>PG-13</option>
+                <option value="R">R</option>
+              </select>
+            </div>
           </div>
 
-          <div class="cs-field">
-            <label>Era</label>
-            <select id="custom-era">
-              <option value="Classic">Classic Era | &lt;1980</option>
-              <option value="Retro 80s-90s">Retro Era | 1980–1999</option>
-              <option value="2000s">Modern Era | 2000–2015</option>
-              <option value="Contemporary" selected>Contemporary | 2016–Present</option>
-            </select>
+          <div class="cluster-field">
+            <label for="clusterEra">Era</label>
+            <div class="select-wrapper">
+              <select id="clusterEra" name="era">
+                <option value="Classic | Pre-1980" selected>Classic | Pre-1980</option>
+                <option value="Modern | 1980–1999">Modern | 1980–1999</option>
+                <option value="2000s | 2000–2015">2000s | 2000–2015</option>
+                <option value="Contemporary | 2016–Present">Contemporary | 2016–Present</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1rem;">
-          <button type="button" class="btn-outline" onclick="closeCustomModal()">Cancel</button>
-          <button type="submit" class="btn-primary">Add Cluster</button>
+        <div class="cluster-actions">
+          <button type="button" class="btn-cluster-cancel" id="cancelClusterBtn">Cancel</button>
+          <button type="submit" class="btn-cluster-add">Add Cluster</button>
         </div>
       </form>
     </div>
   </div>
 
   <script>
-    document.getElementById('user-display').textContent = localStorage.getItem('cinesense_active_user') || 'Evaluator';
-
-    function handleSignOut() {
-      localStorage.removeItem('cinesense_active_user');
-      localStorage.removeItem('cinesense_user');
-      window.location.href = 'index.html';
-    }
-
-    function findPostersForGeneralCluster(styleFilter, genreFilters, eraFilter = null) {
-      if (!window.movies || movies.length === 0) return [];
-      const collected = [];
-
-      movies.forEach(m => {
-        const genreMatch = genreFilters.some(g => m.genres.includes(g));
-        const styleMatch = !styleFilter || m.style === styleFilter;
-        const eraMatch = !eraFilter || m.era === eraFilter;
-
-        if (styleMatch && genreMatch && (!eraFilter || eraMatch)) {
-          if (!collected.includes(m.img)) collected.push(m.img);
-        }
-      });
-
-      if (collected.length < 3) {
-        movies.forEach(m => {
-          const genreMatch = genreFilters.some(g => m.genres.includes(g));
-          const styleMatch = styleFilter && m.style === styleFilter;
-
-          if ((styleMatch || genreMatch) && !collected.includes(m.img)) {
-            collected.push(m.img);
-          }
-        });
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedCluster = JSON.parse(localStorage.getItem("cineSense_customCluster"));
+      if (savedCluster) {
+        if (savedCluster.genre) document.getElementById("clusterGenre").value = savedCluster.genre;
+        if (savedCluster.style) document.getElementById("clusterStyle").value = savedCluster.style;
+        if (savedCluster.rating) document.getElementById("clusterRating").value = savedCluster.rating;
+        if (savedCluster.era) document.getElementById("clusterEra").value = savedCluster.era;
       }
 
-      return collected.slice(0, 3);
-    }
-
-    let preferenceClusters = [];
-    let pickedClusterIds = new Set();
-
-    function initClusters() {
-      preferenceClusters = [
-        {
-          id: 'c_animation',
-          label: 'Animated Worlds & Family Adventures',
-          description: 'Hand-drawn classics, stylized multiverses, and animated epics.',
-          style: 'Animation',
-          genres: ['Animation', 'Family', 'Adventure'],
-          posters: findPostersForGeneralCluster('Animation', ['Animation', 'Family', 'Adventure'])
-        },
-        {
-          id: 'c_noir_crime',
-          label: 'Noir & Crime Thrillers',
-          description: 'Gritty investigations, moral dilemmas, psychological tensions, and dark alleys.',
-          style: 'Noir / Dark',
-          genres: ['Crime', 'Drama', 'Mystery'],
-          posters: findPostersForGeneralCluster('Noir / Dark', ['Crime', 'Mystery'])
-        },
-        {
-          id: 'c_scifi_space',
-          label: 'Sci-Fi & Space Odysseys',
-          description: 'Futuristic worlds, time anomalies, space exploration, and cyberpunk.',
-          style: null,
-          genres: ['Sci-Fi', 'Adventure'],
-          posters: findPostersForGeneralCluster(null, ['Sci-Fi'])
-        },
-        {
-          id: 'c_classic_cinema',
-          label: 'Golden Age & Vintage Masterpieces',
-          description: 'Historic landmarks, cinematic originators, and unforgettable epics.',
-          style: 'Live-Action',
-          era: 'Classic',
-          genres: ['Drama', 'Crime', 'Family'],
-          posters: findPostersForGeneralCluster('Live-Action', ['Drama', 'Crime', 'Family'], 'Classic')
-        },
-        {
-          id: 'c_experimental',
-          label: 'Experimental & Mind-Bending',
-          description: 'Nonlinear storytelling, surrealist narratives, and cult classics.',
-          style: 'Experimental',
-          genres: ['Drama', 'Action', 'Comedy'],
-          posters: findPostersForGeneralCluster('Experimental', ['Drama', 'Action', 'Comedy'])
-        },
-        {
-          id: 'c_action_blockbuster',
-          label: 'High-Octane Action & Spectacle',
-          description: 'Superhero feats, high stakes, groundbreaking stunts, and thrill rides.',
-          style: 'Live-Action',
-          genres: ['Action', 'Adventure'],
-          posters: findPostersForGeneralCluster('Live-Action', ['Action', 'Adventure'])
-        },
-        {
-          id: 'c_prestige_drama',
-          label: 'Character Studies & Prestige Drama',
-          description: 'Emotional narratives, historical biopics, and deep social reflections.',
-          style: 'Live-Action',
-          genres: ['Drama', 'Biography'],
-          posters: findPostersForGeneralCluster('Live-Action', ['Drama', 'Biography'])
-        },
-        {
-          id: 'c_documentaries',
-          label: 'Real-World Documentaries & Nature',
-          description: 'Breathtaking human achievements, wildlife encounters, and real stories.',
-          style: 'Documentary',
-          genres: ['Documentary'],
-          posters: findPostersForGeneralCluster('Documentary', ['Documentary'])
-        }
-      ];
-    }
-
-    function renderClusters() {
-      const container = document.getElementById('clusters-container');
-      container.innerHTML = '';
-
-      preferenceClusters.forEach(cluster => {
-        const isPicked = pickedClusterIds.has(cluster.id);
-        const card = document.createElement('div');
-        card.className = `cluster-card ${isPicked ? 'picked' : ''}`;
-        card.onclick = () => toggleClusterPick(cluster.id);
-
-        card.innerHTML = `
-          <div class="selection-indicator">${isPicked ? '✓' : ''}</div>
-          <div style="flex: 1;">
-            <div style="font-size: 0.95rem; font-weight: 700; color: #f5f3ff; margin-bottom: 0.25rem;">
-              ${cluster.label}
-            </div>
-            <div style="font-size: 0.75rem; color: var(--cs-text-muted); margin-bottom: 0.65rem; line-height: 1.3;">
-              ${cluster.description}
-            </div>
-            <div class="cluster-posters">
-              ${cluster.posters.map(img => `<div class="mini-thumb" style="background-image:url('${img}')"></div>`).join('')}
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
+      document.getElementById("cancelClusterBtn").addEventListener("click", () => {
+        window.location.href = "dashboard.html";
       });
 
-      document.getElementById('selected-count').textContent = pickedClusterIds.size;
-      document.getElementById('continue-btn').style.display = pickedClusterIds.size > 0 ? 'inline-flex' : 'none';
-    }
+      document.getElementById("clusterForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const cluster = {
+          genre: document.getElementById("clusterGenre").value,
+          style: document.getElementById("clusterStyle").value,
+          rating: document.getElementById("clusterRating").value,
+          era: document.getElementById("clusterEra").value
+        };
 
-    function toggleClusterPick(id) {
-      if (pickedClusterIds.has(id)) {
-        pickedClusterIds.delete(id);
-      } else {
-        if (pickedClusterIds.size >= 3) {
-          return;
-        }
-        pickedClusterIds.add(id);
-      }
-      renderClusters();
-    }
-
-    function clearSelections() {
-      pickedClusterIds.clear();
-      renderClusters();
-    }
-
-    function openCustomModal() {
-      document.getElementById('custom-cluster-modal').classList.add('active');
-    }
-
-    function closeCustomModal() {
-      document.getElementById('custom-cluster-modal').classList.remove('active');
-    }
-
-    function handleCreateCluster(e) {
-      e.preventDefault();
-      const genre = document.getElementById('custom-genre').value;
-      const style = document.getElementById('custom-style').value;
-      const age = document.getElementById('custom-age').value;
-      const era = document.getElementById('custom-era').value;
-
-      const newCluster = {
-        id: 'custom_' + Date.now(),
-        label: `${era} ${style} • ${genre}`,
-        description: `Custom target cluster with ${age} classification.`,
-        style: style,
-        genres: [genre],
-        era: era,
-        posters: findPostersForGeneralCluster(style, [genre], era)
-      };
-
-      preferenceClusters.unshift(newCluster);
-      closeCustomModal();
-      renderClusters();
-    }
-
-    function goToDashboard() {
-      const activeProfiles = [];
-      pickedClusterIds.forEach(id => {
-        const found = preferenceClusters.find(c => c.id === id);
-        if (found) activeProfiles.push(found);
+        localStorage.setItem("cineSense_customCluster", JSON.stringify(cluster));
+        window.location.href = "dashboard.html";
       });
-
-      localStorage.setItem('cinesense_calibrated_clusters', JSON.stringify(activeProfiles));
-      window.location.href = 'dashboard.html';
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      initClusters();
-      renderClusters();
     });
   </script>
 </body>
