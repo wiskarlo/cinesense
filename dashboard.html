@@ -29,13 +29,19 @@
         <div class="criteria-selector">
           <select id="filter-genre" onchange="runPrimarySearch()">
             <option value="ALL">All Genres</option>
+            <option value="Drama" selected>Drama</option>
             <option value="Action">Action</option>
-            <option value="Animation">Animation</option>
-            <option value="Crime">Crime</option>
-            <option value="Drama">Drama</option>
-            <option value="Sci-Fi">Sci-Fi</option>
             <option value="Adventure">Adventure</option>
+            <option value="Animation">Animation</option>
+            <option value="Comedy">Comedy</option>
+            <option value="Crime">Crime</option>
+            <option value="Documentary">Documentary</option>
             <option value="Family">Family</option>
+            <option value="Fantasy">Fantasy</option>
+            <option value="Mystery">Mystery</option>
+            <option value="Romance">Romance</option>
+            <option value="Sci-Fi">Sci-Fi</option>
+            <option value="Thriller">Thriller</option>
           </select>
         </div>
 
@@ -86,6 +92,7 @@
       <div style="display: flex; align-items: center; gap: 8px;">
         <span style="font-size: 0.8rem; color: var(--cs-text-muted);">Preferred Tags:</span>
         <div class="active-preference-chips" id="preference-chips"></div>
+        <a href="preferences.html" style="font-size: 0.8rem; color: #ff0080; text-decoration: none; margin-left: 8px; font-weight: 600;">+ Change Cluster</a>
       </div>
     </div>
 
@@ -153,34 +160,114 @@
     let currentFilterTag = "ALL";
     let activeMovie = null;
 
+    const userCluster = JSON.parse(localStorage.getItem('cineSense_customCluster')) || {
+      genre: "Drama",
+      style: "Animated",
+      rating: "PG",
+      era: "Classic | Pre-1980"
+    };
+
     function handleSignOut() {
       localStorage.removeItem('cinesense_active_user');
       localStorage.removeItem('cinesense_user');
       window.location.href = 'index.html';
     }
 
+    // --- Machine Learning / Feature Vector & Cosine Similarity ---
+    const ML_GENRES = ["Action","Animation","Crime","Drama","Sci-Fi","Adventure","Family","Comedy","Fantasy","Horror","Mystery","Thriller","Documentary"];
+    const ML_STYLES = ["Live-Action","Animation","Animated","Noir / Dark","Experimental","Documentary"];
+    const ML_AGES   = ["G","PG","PG-13","R"];
+    const ML_ERAS   = ["Classic","Retro 80s-90s","2000s","Contemporary"];
+
+    function normalizeEra(era) {
+      if (!era) return "Classic";
+      if (era.includes("Pre-1980") || era === "Classic") return "Classic";
+      if (era.includes("1980") || era.includes("Retro")) return "Retro 80s-90s";
+      if (era.includes("2000") || era.includes("Modern")) return "2000s";
+      return "Contemporary";
+    }
+
+    function normalizeStyle(style) {
+      if (style === "Animated") return "Animation";
+      return style;
+    }
+
+    function createFeatureVector(item) {
+      const vec = [];
+      const itemGenres = item.genres || (item.genre ? (Array.isArray(item.genre) ? item.genre : [item.genre]) : []);
+      const itemStyle = normalizeStyle(item.style);
+      const itemAge = item.age || item.rating;
+      const itemEra = normalizeEra(item.era);
+
+      ML_GENRES.forEach(g => vec.push(itemGenres.includes(g) ? 1.5 : 0));
+      ML_STYLES.forEach(s => vec.push(itemStyle === s ? 1.2 : 0));
+      ML_AGES.forEach(a => vec.push(itemAge === a ? 1.0 : 0));
+      ML_ERAS.forEach(e => vec.push(itemEra === e ? 1.0 : 0));
+
+      return vec;
+    }
+
+    function cosineSimilarity(vecA, vecB) {
+      let dot = 0, normA = 0, normB = 0;
+      for (let i = 0; i < vecA.length; i++) {
+        dot += vecA[i] * vecB[i];
+        normA += vecA[i] * vecA[i];
+        normB += vecB[i] * vecB[i];
+      }
+      if (normA === 0 || normB === 0) return 0;
+      return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+    }
+
+    const clusterVector = createFeatureVector({
+      genres: [userCluster.genre],
+      style: userCluster.style,
+      age: userCluster.rating,
+      era: userCluster.era
+    });
+
+    function computeMatchScore(movie) {
+      const movieVector = createFeatureVector(movie);
+      const sim = cosineSimilarity(clusterVector, movieVector);
+      
+      // Base score derived from ML cosine similarity (scaled between 55% and 94%)
+      let score = Math.round(55 + (sim * 39));
+
+      // Collaborative user tags and rating boosts
+      if (movie.userRating > 0) score += (movie.userRating - 3) * 3;
+      if (movie.tags) {
+        movie.tags.forEach(t => {
+          if (userPreferredTags.includes(t.toLowerCase())) score += 3;
+        });
+      }
+      return Math.min(Math.max(score, 50), 99);
+    }
+
     function runPrimarySearch() {
       const query = (document.getElementById('text-search-input').value || '').toLowerCase().trim();
       const selectedGenre = document.getElementById('filter-genre').value;
       const selectedStyle = document.getElementById('filter-style').value;
-      const selectedAge = document.getElementById('filter-age').value;
-      const selectedEra = document.getElementById('filter-era').value;
+      const selectedAge   = document.getElementById('filter-age').value;
+      const selectedEra   = document.getElementById('filter-era').value;
 
       const filtered = movies.filter(movie => {
+        const movieGenres = movie.genres || [];
         const matchText = !query || 
           movie.title.toLowerCase().includes(query) ||
           movie.desc.toLowerCase().includes(query) ||
           movie.style.toLowerCase().includes(query) ||
-          movie.genres.some(g => g.toLowerCase().includes(query));
+          movieGenres.some(g => g.toLowerCase().includes(query));
 
-        const matchGenre = (selectedGenre === 'ALL') || movie.genres.includes(selectedGenre);
-        const matchStyle = (selectedStyle === 'ALL') || (movie.style === selectedStyle);
+        const matchGenre = (selectedGenre === 'ALL') || movieGenres.includes(selectedGenre);
+        const matchStyle = (selectedStyle === 'ALL') || (normalizeStyle(movie.style) === normalizeStyle(selectedStyle));
         const matchAge   = (selectedAge === 'ALL')   || (movie.age === selectedAge);
         const matchEra   = (selectedEra === 'ALL')   || (movie.era === selectedEra);
-        const matchTag   = (currentFilterTag === 'ALL') || movie.tags.includes(currentFilterTag);
+        const matchTag   = (currentFilterTag === 'ALL') || (movie.tags && movie.tags.includes(currentFilterTag));
 
         return matchText && matchGenre && matchStyle && matchAge && matchEra && matchTag;
       });
+
+      // Rank by ML similarity match score
+      filtered.sort((a, b) => computeMatchScore(b) - computeMatchScore(a));
 
       renderPrimaryShelf(filtered);
       document.getElementById('results-count-tag').textContent = `${filtered.length} titles found`;
@@ -201,7 +288,9 @@
     function initializeTagDropdown() {
       const select = document.getElementById('community-tag-select');
       const allTags = new Set();
-      movies.forEach(m => m.tags.forEach(t => allTags.add(t)));
+      movies.forEach(m => {
+        if (m.tags) m.tags.forEach(t => allTags.add(t));
+      });
       
       allTags.forEach(tag => {
         const option = document.createElement('option');
@@ -233,8 +322,9 @@
     }
 
     function addPreferenceTag(tag) {
-      if (!userPreferredTags.includes(tag)) {
-        userPreferredTags.push(tag);
+      const lower = tag.toLowerCase();
+      if (!userPreferredTags.includes(lower)) {
+        userPreferredTags.push(lower);
         renderPreferenceChips();
         runPrimarySearch();
         renderCuratedShelves();
@@ -246,7 +336,8 @@
     }
 
     function removePreferenceTag(tag) {
-      userPreferredTags = userPreferredTags.filter(t => t !== tag);
+      const lower = tag.toLowerCase();
+      userPreferredTags = userPreferredTags.filter(t => t !== lower);
       renderPreferenceChips();
       runPrimarySearch();
       renderCuratedShelves();
@@ -254,15 +345,6 @@
         renderModalTags(activeMovie);
         document.getElementById('modal-score').textContent = `Predicted Affinity: ${computeMatchScore(activeMovie)}%`;
       }
-    }
-
-    function computeMatchScore(movie) {
-      let score = 70;
-      if (movie.userRating > 0) score += (movie.userRating - 3) * 6;
-      movie.tags.forEach(t => {
-        if (userPreferredTags.includes(t)) score += 8;
-      });
-      return Math.min(Math.max(score, 45), 99);
     }
 
     function buildMovieCard(movie) {
@@ -276,7 +358,7 @@
       card.innerHTML = `
         <div class="poster-box">
           <span class="match-chip">${match}% Match</span>
-          <img src="${movie.img}" alt="${movie.title}">
+          <img src="${movie.img}" alt="${movie.title}" onerror="this.src='images/parasite.jpg'">
         </div>
         <div class="card-details">
           <div class="card-title">${movie.title}</div>
@@ -303,8 +385,13 @@
       animShelf.innerHTML = '';
       noirShelf.innerHTML = '';
 
-      movies.filter(m => m.style === 'Animation').forEach(m => animShelf.appendChild(buildMovieCard(m)));
-      movies.filter(m => m.style === 'Noir / Dark' || m.genres.includes('Crime')).forEach(m => noirShelf.appendChild(buildMovieCard(m)));
+      const animList = movies.filter(m => normalizeStyle(m.style) === 'Animation');
+      animList.sort((a, b) => computeMatchScore(b) - computeMatchScore(a));
+      animList.forEach(m => animShelf.appendChild(buildMovieCard(m)));
+
+      const noirList = movies.filter(m => m.style === 'Noir / Dark' || (m.genres && m.genres.includes('Crime')));
+      noirList.sort((a, b) => computeMatchScore(b) - computeMatchScore(a));
+      noirList.forEach(m => noirShelf.appendChild(buildMovieCard(m)));
     }
 
     function renderModalStarRating(movie) {
@@ -349,7 +436,7 @@
       document.getElementById('modal-banner').style.backgroundImage = `url('${m.img}')`;
       document.getElementById('modal-meta').innerHTML = `
         ${m.year} (${m.era}) &bull; Rated ${m.age} &bull; <strong>Style:</strong> ${m.style} &bull; 
-        <strong>Genres:</strong> ${m.genres.join(', ')}
+        <strong>Genres:</strong> ${(m.genres || []).join(', ')}
       `;
       document.getElementById('modal-score').textContent = `Predicted Affinity: ${computeMatchScore(m)}%`;
       document.getElementById('modal-desc').textContent = m.desc;
@@ -362,8 +449,9 @@
     function renderModalTags(m) {
       const tagBox = document.getElementById('modal-tags-container');
       tagBox.innerHTML = '';
+      if (!m.tags) return;
       m.tags.forEach(tag => {
-        const isAdded = userPreferredTags.includes(tag);
+        const isAdded = userPreferredTags.includes(tag.toLowerCase());
         const tagEl = document.createElement('div');
         tagEl.className = `tag-badge ${isAdded ? 'added' : ''}`;
         tagEl.innerHTML = `${tag} ${isAdded ? '✓ Added' : '+ Add to Profile'}`;
@@ -378,6 +466,13 @@
     function closeMovieModal() {
       activeMovie = null;
       document.getElementById('movie-modal').classList.remove('active');
+    }
+
+    if (userCluster) {
+      if (userCluster.genre) document.getElementById('filter-genre').value = userCluster.genre;
+      if (userCluster.style) document.getElementById('filter-style').value = normalizeStyle(userCluster.style);
+      if (userCluster.rating) document.getElementById('filter-age').value = userCluster.rating;
+      if (userCluster.era) document.getElementById('filter-era').value = normalizeEra(userCluster.era);
     }
 
     initializeTagDropdown();
