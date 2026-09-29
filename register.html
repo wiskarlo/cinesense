@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register | CineSense</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <nav class="cs-nav">
+      <a href="index.html" class="cs-brand">CineSense</a>
+    </nav>
+
+  <div class="form-panel">
+      <h2>Create your Account</h2>
+      <form onsubmit="handleRegistration(event)">
+      <div class="form-grid">
+          <div>
+            <div class="cs-field">
+              <label>Email Address</label>
+              <input type="email" id="email" placeholder="name@gmail.com" required>
+            </div>
+            <div class="cs-field">
+              <label>Username</label>
+              <input type="text" id="username" placeholder="username" required>
+            </div>
+            <div class="cs-field">
+              <label>Password</label>
+              <input type="password" placeholder="********" required>
+            </div>
+          </div>
+
+          <div>
+            <div class="cs-field">
+              <label>City / Location</label>
+              <input type="text" placeholder="e.g. Metro Manila, Philippines" required>
+            </div>
+            <div class="cs-field">
+              <label>Primary Movie Interest</label>
+              <select>
+                <option> </option>
+                <option>Contemporary &amp; Stylized</option>
+                <option>Classic Masterpieces</option>
+                <option>Experimental &amp; Noir</option>
+              </select>
+            </div>
+            <div class="cs-field">
+              <label>Research Group Affiliation</label>
+              <input type="text" placeholder="e.g. CineSense Project Group">
+            </div>
+          </div>
+      </div>
+
+      <div style="margin: 1.5rem 0;">
+        <input type="checkbox" id="agree" required>
+        <label for="agree" style="font-size: 0.8rem; color: var(--cs-text-muted);">
+          I agree to the CineSense Multi-Criteria Research and Evaluation Terms.
+        </label>
+      </div>
+
+      <button type="submit" class="btn-primary">Register &amp; Set Preferences</button>
+      </form>
+    </div>
+
+  <script>
+    function handleRegistration(e) {
+      e.preventDefault();
+      localStorage.setItem('cinesense_active_user', document.getElementById('username').value);
+      window.location.href = 'preferences.html';
+    }
+  </script>
+</body>
+</html>
