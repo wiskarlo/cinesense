@@ -1,66 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Register | CineSense</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Register | CineSense</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <nav class="cs-nav">
-      <a href="index.html" class="cs-brand">CineSense</a>
-    </nav>
+  <nav class="cs-nav">
+    <a href="index.html" class="cs-brand">CineSense</a>
+  </nav>
 
   <div class="form-panel">
-      <h2>Create your Account</h2>
-      <form onsubmit="handleRegistration(event)">
+    <h2>Create your Account</h2>
+    <form onsubmit="handleRegistration(event)">
       <div class="form-grid">
-          <div>
-            <div class="cs-field">
-              <label>Email Address</label>
-              <input type="email" id="email" placeholder="name@gmail.com" required>
-            </div>
-            <div class="cs-field">
-              <label>Username</label>
-              <input type="text" id="username" placeholder="username" required>
-            </div>
-            <div class="cs-field">
-              <label>Password</label>
-              <input type="password" placeholder="********" required>
-            </div>
+        <div class="form-col">
+          <div class="cs-field">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="name@gmail.com" required autocomplete="email">
           </div>
+          <div class="cs-field">
+            <label>Username</label>
+            <input type="text" id="username" placeholder="username" required autocomplete="username">
+          </div>
+        </div>
 
-          <div>
-            <div class="cs-field">
-              <label>City / Location</label>
-              <input type="text" placeholder="e.g. Metro Manila, Philippines" required>
-            </div>
-            <div class="cs-field">
-              <label>Primary Movie Interest</label>
-              <select>
-                <option> </option>
-                <option>Contemporary &amp; Stylized</option>
-                <option>Classic Masterpieces</option>
-                <option>Experimental &amp; Noir</option>
-              </select>
-            </div>
-            <div class="cs-field">
-              <label>Research Group Affiliation</label>
-              <input type="text" placeholder="e.g. CineSense Project Group">
-            </div>
+        <div class="form-col">
+          <div class="cs-field">
+            <label>City / Location</label>
+            <input type="text" placeholder="e.g. Metro Manila, Philippines" required>
           </div>
+          <div class="cs-field">
+            <label>Password</label>
+            <input type="password" placeholder="********" required autocomplete="new-password">
+          </div>
+        </div>
       </div>
 
-      <div style="margin: 1.5rem 0;">
+      <div class="terms-row">
         <input type="checkbox" id="agree" required>
-        <label for="agree" style="font-size: 0.8rem; color: var(--cs-text-muted);">
-          I agree to the CineSense Multi-Criteria Research and Evaluation Terms.
+        <label for="agree">
+          I agree to the CineSense Multi-Criteria Research and Evaluation Terms. 
         </label>
       </div>
-
+      <br/>
       <button type="submit" class="btn-primary">Register &amp; Set Preferences</button>
-      </form>
-    </div>
+    </form>
+  </div>
 
   <script>
     function handleRegistration(e) {
